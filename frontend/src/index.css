@@ -254,7 +254,7 @@ button:disabled {
 }
 
 .winner-name {
-  font-size: 2rem;
+  font-size: 20px;
   font-weight: bold;
   color: black;
   animation: lightning-flash 1s ease-in-out;
