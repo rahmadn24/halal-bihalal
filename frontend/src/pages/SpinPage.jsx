@@ -14,22 +14,23 @@ function SpinPage() {
 
   const fetchHadirList = async () => {
     try {
-      const res = await axios.get('http://localhost:3001/anggota');
+      const res = await axios.get('/api/anggota');
       const hadir = res.data.filter(a => a.status_hadir);
       const menang = res.data.filter(a => a.status_hadir && a.sudah_menang);
       setHadirList(hadir);
       setWinners(menang);
     } catch (err) {
-      console.error(err);
+      console.error('Gagal fetch daftar hadir', err);
     }
   };
 
   const spin = async () => {
     if (hadirList.length === 0 || spinning) return;
     setSpinning(true);
-    const spinDuration = 10000; // 10 detik
+    const spinDuration = 5000; // Bisa kamu ubah
     const interval = 100;
     let totalTime = 0;
+
     const spinInterval = setInterval(() => {
       const randomIndex = Math.floor(Math.random() * hadirList.length);
       setSelected(hadirList[randomIndex]);
@@ -37,12 +38,13 @@ function SpinPage() {
       if (totalTime >= spinDuration) {
         clearInterval(spinInterval);
         setSpinning(false);
-        axios.post('http://localhost:3001/spin')
+        axios.post('/api/spin')
           .then(res => {
-            setSelected(res.data.winner);
+            const winner = res.data.winners?.[0];
+            if (winner) setSelected(winner);
             fetchHadirList();
           })
-          .catch(err => console.error(err));
+          .catch(err => console.error('Gagal spin', err));
       }
     }, interval);
   };
@@ -52,10 +54,10 @@ function SpinPage() {
     if (!confirmReset) return;
 
     try {
-      await axios.post('http://localhost:3001/reset-pemenang');
+      await axios.post('/api/reset-pemenang');
       fetchHadirList();
     } catch (err) {
-      console.error(err);
+      console.error('Gagal reset pemenang', err);
     }
   };
 
