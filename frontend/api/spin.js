@@ -22,7 +22,7 @@ export default async function handler(req, res) {
     const lastWinner = await pool.query(
       'SELECT MAX(pemenang_ke) as max FROM anggota WHERE sudah_menang = TRUE'
     );
-    let nextIndex = (lastWinner.rows[0].max || 50) - 1;  // Mulai dari 50 ke bawah
+    let nextIndex = (lastWinner.rows[0].max || 51) - 1;  // Mulai dari 50 ke bawah
 
     // Update tiap pemenang dengan sudah_menang dan pemenang_ke
     for (const winner of winners) {

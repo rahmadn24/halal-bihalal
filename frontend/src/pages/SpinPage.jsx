@@ -108,7 +108,7 @@ function SpinPage() {
               <li key={w.id} className="winner-item">
                 <span>{i + 1}. </span>
                 <span>{w.nama}</span>
-                <span>{w.pemenang_ke}</span>
+                <span>" Dorprize No "{w.pemenang_ke}</span>
               </li>
             ))}
           </ul>
