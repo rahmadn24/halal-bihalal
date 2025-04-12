@@ -132,7 +132,6 @@ button:disabled {
 }
 
 .spin-page {
-  display: flex;
   gap: 2rem;
   padding: 2rem;
   font-family: 'Segoe UI', sans-serif;
