@@ -4,10 +4,12 @@ import '../index.css';
 
 function SpinPage() {
   const [hadirList, setHadirList] = useState([]);
-  const [selectedList, setSelectedList] = useState([]);
   const [spinning, setSpinning] = useState(false);
+  const [selectedList, setSelectedList] = useState([]);
   const [winners, setWinners] = useState([]);
   const [jumlahPemenang, setJumlahPemenang] = useState(1);
+  const [currentName, setCurrentName] = useState('-');
+  const [history, setHistory] = useState([]);
 
   useEffect(() => {
     fetchHadirList();
@@ -16,7 +18,7 @@ function SpinPage() {
   const fetchHadirList = async () => {
     try {
       const res = await axios.get('/api/anggota');
-      const hadir = res.data.filter(a => a.status_hadir);
+      const hadir = res.data.filter(a => a.status_hadir && !a.sudah_menang);
       const menang = res.data.filter(a => a.status_hadir && a.sudah_menang);
       setHadirList(hadir);
       setWinners(menang);
@@ -27,25 +29,38 @@ function SpinPage() {
 
   const spin = async () => {
     if (hadirList.length === 0 || spinning) return;
+    const jumlah = Math.min(jumlahPemenang, hadirList.length);
     setSpinning(true);
+    setSelectedList([]);
+    setCurrentName('-');
+
+    let totalTime = 0;
     const spinDuration = 5000;
     const interval = 100;
-    let totalTime = 0;
 
     const spinInterval = setInterval(() => {
       const randomIndex = Math.floor(Math.random() * hadirList.length);
-      setSelectedList([hadirList[randomIndex]]);
+      setCurrentName(hadirList[randomIndex].nama);
       totalTime += interval;
+
       if (totalTime >= spinDuration) {
         clearInterval(spinInterval);
-        setSpinning(false);
-        axios.post(`/api/spin?jumlah=${jumlahPemenang}`)
-          .then(res => {
+        axios
+          .post(`/api/spin?jumlah=${jumlah}`)
+          .then((res) => {
             const winners = res.data.winners;
-            if (winners?.length) setSelectedList(winners);
+            if (winners?.length) {
+              setSelectedList(winners);
+              setCurrentName('-');
+              setHistory((prev) => [...prev, winners]); // ⏱️ Simpan history
+            }
             fetchHadirList();
+            setSpinning(false);
           })
-          .catch(err => console.error('Gagal spin', err));
+          .catch((err) => {
+            console.error('Gagal spin', err);
+            setSpinning(false);
+          });
       }
     }, interval);
   };
@@ -56,6 +71,7 @@ function SpinPage() {
 
     try {
       await axios.post('/api/reset-pemenang');
+      setHistory([]); // Kosongkan history juga
       fetchHadirList();
     } catch (err) {
       console.error('Gagal reset pemenang', err);
@@ -74,23 +90,27 @@ function SpinPage() {
             min="1"
             max={hadirList.length}
             value={jumlahPemenang}
-            onChange={e => setJumlahPemenang(Number(e.target.value))}
+            onChange={(e) => setJumlahPemenang(Number(e.target.value))}
             disabled={spinning}
             className="jumlah-input"
           />
         </div>
 
         <div className={`spin-box ${spinning ? 'spinning lightning' : ''}`}>
-          {selectedList.length > 0 ? (
+          {spinning ? (
+            <h1 className="placeholder">{currentName}</h1>
+          ) : selectedList.length > 0 ? (
             selectedList.map((p, i) => (
-              <h1 className="winner-name" key={p.id}>{i + 1}. {p.nama}</h1>
+              <h1 className="winner-name" key={p.id}>
+                🎉 {i + 1}. {p.nama}
+              </h1>
             ))
           ) : (
             <h1 className="placeholder">-</h1>
           )}
         </div>
 
-        <button onClick={spin} disabled={spinning} className="spin-button">
+        <button onClick={spin} disabled={spinning || hadirList.length === 0} className="spin-button">
           {spinning ? 'Memutar...' : '⚡ Mulai Spin'}
         </button>
         <button onClick={resetWinners} className="reset-button">
@@ -111,6 +131,28 @@ function SpinPage() {
               </li>
             ))}
           </ul>
+        )}
+      </div>
+
+      <div className="spin-history card">
+        <h3 className="winner-title">📜 Riwayat Spin</h3>
+        {history.length === 0 ? (
+          <p className="winner-empty">Belum ada spin dilakukan</p>
+        ) : (
+          <div className="history-list">
+            {history.map((spinGroup, idx) => (
+              <div key={idx} className="spin-group">
+                <strong>Spin ke-{idx + 1}:</strong>
+                <ul>
+                  {spinGroup.map((p, i) => (
+                    <li key={p.id}>
+                      {i + 1}. {p.nama}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>
