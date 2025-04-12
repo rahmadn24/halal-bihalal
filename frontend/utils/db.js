@@ -1,7 +1,7 @@
 import { Pool } from 'pg';
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: "postgresql://postgres:sprPlIgYvBbJubPOxxqQYqiODcAkjYOJ@hopper.proxy.rlwy.net:31690/railway",
   ssl: {
     rejectUnauthorized: false,
   },
