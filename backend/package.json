@@ -1,0 +1,16 @@
+{
+  "name": "halalbihalal-backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@fastify/cors": "^8.0.0",
+    "dotenv": "^16.0.0",
+    "fastify": "^4.0.0",
+    "pg": "^8.10.0"
+  }
+}
+
