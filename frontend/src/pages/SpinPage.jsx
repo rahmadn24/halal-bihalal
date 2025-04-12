@@ -4,9 +4,10 @@ import '../index.css';
 
 function SpinPage() {
   const [hadirList, setHadirList] = useState([]);
-  const [selected, setSelected] = useState(null);
+  const [selectedList, setSelectedList] = useState([]);
   const [spinning, setSpinning] = useState(false);
   const [winners, setWinners] = useState([]);
+  const [jumlahPemenang, setJumlahPemenang] = useState(1);
 
   useEffect(() => {
     fetchHadirList();
@@ -27,21 +28,21 @@ function SpinPage() {
   const spin = async () => {
     if (hadirList.length === 0 || spinning) return;
     setSpinning(true);
-    const spinDuration = 5000; // Bisa kamu ubah
+    const spinDuration = 5000;
     const interval = 100;
     let totalTime = 0;
 
     const spinInterval = setInterval(() => {
       const randomIndex = Math.floor(Math.random() * hadirList.length);
-      setSelected(hadirList[randomIndex]);
+      setSelectedList([hadirList[randomIndex]]);
       totalTime += interval;
       if (totalTime >= spinDuration) {
         clearInterval(spinInterval);
         setSpinning(false);
-        axios.post('/api/spin')
+        axios.post(`/api/spin?jumlah=${jumlahPemenang}`)
           .then(res => {
-            const winner = res.data.winners?.[0];
-            if (winner) setSelected(winner);
+            const winners = res.data.winners;
+            if (winners?.length) setSelectedList(winners);
             fetchHadirList();
           })
           .catch(err => console.error('Gagal spin', err));
@@ -65,9 +66,30 @@ function SpinPage() {
     <div className="spin-page">
       <div className="spin-left card">
         <h2 className="spin-title">Spin Doorprize</h2>
-        <div className={`spin-box ${spinning ? 'spinning lightning' : ''}`}>
-          {selected ? <h1 className="winner-name">{selected.nama}</h1> : <h1 className="placeholder">-</h1>}
+
+        <div className="spin-control">
+          <label>Jumlah Pemenang:</label>
+          <input
+            type="number"
+            min="1"
+            max={hadirList.length}
+            value={jumlahPemenang}
+            onChange={e => setJumlahPemenang(Number(e.target.value))}
+            disabled={spinning}
+            className="jumlah-input"
+          />
         </div>
+
+        <div className={`spin-box ${spinning ? 'spinning lightning' : ''}`}>
+          {selectedList.length > 0 ? (
+            selectedList.map((p, i) => (
+              <h1 className="winner-name" key={p.id}>{i + 1}. {p.nama}</h1>
+            ))
+          ) : (
+            <h1 className="placeholder">-</h1>
+          )}
+        </div>
+
         <button onClick={spin} disabled={spinning} className="spin-button">
           {spinning ? 'Memutar...' : '⚡ Mulai Spin'}
         </button>
