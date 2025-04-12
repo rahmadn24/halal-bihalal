@@ -23,7 +23,7 @@ const HomePage = () => {
     const nama = prompt("Nama peserta:");
     if (!nama) return;
     try {
-      await axios.post("/api/anggota", { nama });
+      await axios.post("/api/anggota/tambah", { nama });
       fetchParticipants();
     } catch (err) {
       console.error("Gagal tambah peserta", err);
@@ -32,7 +32,7 @@ const HomePage = () => {
 
   const handleMarkHadir = async (id) => {
     try {
-      await axios.post(`/api/hadir?id=${id}`);
+      await axios.post(`/api/anggota/hadir?id=${id}`);
       fetchParticipants();
     } catch (err) {
       console.error("Gagal tandai hadir", err);
